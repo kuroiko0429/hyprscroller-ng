@@ -1,1 +1,2 @@
-/hyprscrolling.so
+*.so
+build/
