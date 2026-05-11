@@ -715,7 +715,7 @@ void CScrollingLayout::removeTarget(SP<Layout::ITarget> target) {
         std::max(m_scrollingData->maxWidth() - USABLE.w, 0.0));
 }
 
-void CScrollingLayout::recalculate() {
+void CScrollingLayout::recalculate(Layout::eRecalculateReason reason) {
     m_scrollingData->recalculate();
 }
 
@@ -897,7 +897,7 @@ SP<SScrollingWindowData> CScrollingLayout::findBestNeighbor(SP<SScrollingWindowD
     return nullptr;
 }
 
-std::expected<void, std::string> CScrollingLayout::layoutMsg(const std::string_view& sv) {
+Config::ErrorResult CScrollingLayout::layoutMsg(const std::string_view& sv) {
     const std::string message{sv};
 
     static auto centerOrFit = [](const SP<SScrollingLayoutData> WS, const SP<SColumnData> COL) -> void {

@@ -3,6 +3,7 @@
 #include <hyprland/src/plugins/PluginAPI.hpp>
 #include <hyprland/src/desktop/DesktopTypes.hpp>
 #include <hyprland/src/config/ConfigManager.hpp>
+#include <hyprland/src/config/values/ConfigValues.hpp>
 #include <hyprland/src/helpers/Color.hpp>
 
 #include "globals.hpp"
@@ -27,16 +28,16 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         throw std::runtime_error("[hs] Version mismatch");
     }
 
-    // Register config values
-    HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprscrolling:fullscreen_on_one_column", Hyprlang::INT{0});
-    HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprscrolling:column_width", Hyprlang::FLOAT{0.5F});
-    HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprscrolling:focus_fit_method", Hyprlang::INT{0});
-    HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprscrolling:follow_focus", Hyprlang::INT{1});
-    HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprscrolling:follow_debounce_ms", Hyprlang::INT{0});
-    HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprscrolling:explicit_column_widths", Hyprlang::STRING{"0.333, 0.5, 0.667, 1.0"});
-    HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprscrolling:collapsed_width", Hyprlang::INT{30});
-    HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprscrolling:focus_history", Hyprlang::INT{1});
-    HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprscrolling:auto_width_rules", Hyprlang::STRING{""});
+    // Register config values (V2 API)
+    HyprlandAPI::addConfigValueV2(PHANDLE, makeShared<Config::Values::Int>("plugin:hyprscrolling:fullscreen_on_one_column", "fullscreen single column", 0));
+    HyprlandAPI::addConfigValueV2(PHANDLE, makeShared<Config::Values::Float>("plugin:hyprscrolling:column_width", "default column width", 0.5F));
+    HyprlandAPI::addConfigValueV2(PHANDLE, makeShared<Config::Values::Int>("plugin:hyprscrolling:focus_fit_method", "focus fit method", 0));
+    HyprlandAPI::addConfigValueV2(PHANDLE, makeShared<Config::Values::Int>("plugin:hyprscrolling:follow_focus", "follow focus", 1));
+    HyprlandAPI::addConfigValueV2(PHANDLE, makeShared<Config::Values::Int>("plugin:hyprscrolling:follow_debounce_ms", "follow debounce ms", 0));
+    HyprlandAPI::addConfigValueV2(PHANDLE, makeShared<Config::Values::String>("plugin:hyprscrolling:explicit_column_widths", "explicit column widths", std::string{"0.333, 0.5, 0.667, 1.0"}));
+    HyprlandAPI::addConfigValueV2(PHANDLE, makeShared<Config::Values::Int>("plugin:hyprscrolling:collapsed_width", "collapsed column width in px", 30));
+    HyprlandAPI::addConfigValueV2(PHANDLE, makeShared<Config::Values::Int>("plugin:hyprscrolling:focus_history", "enable focus history", 1));
+    HyprlandAPI::addConfigValueV2(PHANDLE, makeShared<Config::Values::String>("plugin:hyprscrolling:auto_width_rules", "auto width rules per class", std::string{""}));
 
     // Register the tiled algorithm using factory pattern
     bool success = HyprlandAPI::addTiledAlgo(PHANDLE, "hyprscrolling", &typeid(CScrollingLayout), []() -> UP<Layout::ITiledAlgorithm> {

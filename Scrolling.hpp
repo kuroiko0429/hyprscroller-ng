@@ -7,6 +7,7 @@
 #include <hyprland/src/layout/algorithm/TiledAlgorithm.hpp>
 #include <hyprland/src/helpers/memory/Memory.hpp>
 #include <hyprland/src/helpers/signal/Signal.hpp>
+#include <hyprland/src/config/shared/ConfigErrors.hpp>
 
 class CScrollingLayout;
 struct SColumnData;
@@ -104,11 +105,11 @@ class CScrollingLayout : public Layout::ITiledAlgorithm {
     virtual void                                          removeTarget(SP<Layout::ITarget> target);
 
     virtual void                                          resizeTarget(const Vector2D& delta, SP<Layout::ITarget> target, Layout::eRectCorner corner = Layout::CORNER_NONE);
-    virtual void                                          recalculate();
+    virtual void                                          recalculate(Layout::eRecalculateReason reason = Layout::RECALCULATE_REASON_UNKNOWN);
 
     virtual SP<Layout::ITarget>                           getNextCandidate(SP<Layout::ITarget> old);
 
-    virtual std::expected<void, std::string>              layoutMsg(const std::string_view& sv);
+    virtual Config::ErrorResult                           layoutMsg(const std::string_view& sv);
     virtual std::optional<Vector2D>                       predictSizeForNewTarget();
 
     virtual void                                          swapTargets(SP<Layout::ITarget> a, SP<Layout::ITarget> b);
