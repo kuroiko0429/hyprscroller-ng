@@ -42,7 +42,6 @@ struct SColumnData {
     void                                  add(SP<SScrollingWindowData> w, int after);
     void                                  remove(SP<Layout::ITarget> t);
     bool                                  has(SP<Layout::ITarget> t);
-    size_t                                idx(SP<Layout::ITarget> t);
 
     // index of lowest window that is above y.
     size_t                                idxForHeight(float y);

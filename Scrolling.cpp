@@ -1,6 +1,7 @@
 #include "Scrolling.hpp"
 
 #include <algorithm>
+#include <cmath>
 
 #include <hyprland/src/Compositor.hpp>
 #include <hyprland/src/desktop/state/FocusState.hpp>
@@ -62,14 +63,6 @@ void SColumnData::add(SP<SScrollingWindowData> w, int after) {
     windowDatas.insert(windowDatas.begin() + after + 1, w);
     w->column     = self;
     w->windowSize = 1.F / (float)(windowDatas.size());
-}
-
-size_t SColumnData::idx(SP<Layout::ITarget> t) {
-    for (size_t i = 0; i < windowDatas.size(); ++i) {
-        if (windowDatas[i]->target.lock() == t)
-            return i;
-    }
-    return 0;
 }
 
 size_t SColumnData::idxForHeight(float y) {
@@ -426,7 +419,7 @@ void SScrollingLayoutData::recalculate(bool forceInstant) {
         }
 
         currentLeft += ITEM_WIDTH;
-        if (currentLeft == SCROLL_W)
+        if (std::abs(currentLeft - SCROLL_W) < 0.5)
             currentLeft++;
     }
 }
@@ -1055,6 +1048,9 @@ Config::ErrorResult CScrollingLayout::layoutMsg(const std::string_view& sv) {
 
                 return {};
             } else if (ARGS[1] == "-conf") {
+                if (m_config.configuredWidths.empty())
+                    return {};
+
                 for (size_t i = m_config.configuredWidths.size() - 1;; --i) {
                     if (m_config.configuredWidths[i] < COL->columnWidth) {
                         COL->columnWidth = m_config.configuredWidths[i];
@@ -1125,8 +1121,11 @@ Config::ErrorResult CScrollingLayout::layoutMsg(const std::string_view& sv) {
 
             WDATA->column.lock()->columnWidth = 1.F;
 
-            m_scrollingData->leftOffset = 0;
             auto target = WDATA->target.lock();
+            if (!target)
+                return {};
+
+            m_scrollingData->leftOffset = 0;
             for (size_t i = 0; i < m_scrollingData->columns.size(); ++i) {
                 if (m_scrollingData->columns[i]->has(target))
                     break;
