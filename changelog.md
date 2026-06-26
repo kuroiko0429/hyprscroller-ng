@@ -1,5 +1,30 @@
 # Hyprscrolling Plugin Changelog
 
+## 2026-06-26 — コードリファクタリングとバグ修正
+
+### セキュリティ修正
+
+- `colresize all <value>` および `colresize <value>` コマンドで `std::stof` が `"nan"` / `"inf"` を受け入れる問題を修正
+  - `std::isfinite()` チェックを追加し、非有限値は即座に無視するようにした
+  - `colresize all` パスに `std::clamp` も追加（以前はクランプなし）
+  - 背景: `std::clamp(NaN, min, max)` は IEEE 754 の仕様上 NaN をそのまま返すため、CScopeGuard のクランプが無効だった
+
+### バグ修正
+
+- `static CTimer debounceTimer` をクラスメンバ `m_debounceTimer` に移動
+  - 以前は static 変数だったため、複数の `CScrollingLayout` インスタンスでデバウンスタイマーが共有されていた
+- `SColumnData::down()` / `SColumnData::next()` で `windowDatas` が空のとき `size() - 1` が `SIZE_MAX` にアンダーフローする問題を修正
+  - 要素数が 2 未満の場合に早期リターンするガードを追加
+
+### リファクタリング
+
+- `dataForFocusedWindow()` メソッドを新設し、`layoutMsg` 内で 14 箇所重複していたフォーカスウィンドウ検索ループを統合
+- `parseConfig()` メソッドを新設し、`newTarget()` 内で 2 重定義されていた設定パース処理を統合
+  - `m_configCallback` ラムダと初回パースが同じコードを持っていた問題を解消
+- `SScrollingLayoutData::addFirst()` メソッドを追加し、`add(-1)` というマジックナンバーを排除
+
+---
+
 ## 2026-05-11 — Hyprland 0.55.0 対応
 
 ### Hyprland 0.55.0 API 変更点まとめ

@@ -74,6 +74,7 @@ struct SScrollingLayoutData {
 
     SP<SColumnData>              add();
     SP<SColumnData>              add(int after);
+    SP<SColumnData>              addFirst();
     int64_t                      idx(SP<SColumnData> c);
     void                         remove(SP<SColumnData> c);
     double                       maxWidth();
@@ -131,6 +132,7 @@ class CScrollingLayout : public Layout::ITiledAlgorithm {
     std::deque<WP<Layout::ITarget>>                  m_focusHistory;
     int64_t                                          m_focusHistoryIdx = -1;
     bool                                             m_focusHistoryNavigating = false;
+    CTimer                                           m_debounceTimer;
 
     // Zen mode
     bool                                             m_zenMode = false;
@@ -138,6 +140,8 @@ class CScrollingLayout : public Layout::ITiledAlgorithm {
 
     SP<SScrollingWindowData> findBestNeighbor(SP<SScrollingWindowData> pCurrent, SP<SColumnData> pTargetCol);
     SP<SScrollingWindowData> dataFor(SP<Layout::ITarget> t);
+    SP<SScrollingWindowData> dataForFocusedWindow();
+    void                     parseConfig();
 
     void                     focusTargetUpdate(SP<Layout::ITarget> target);
     void                     pushFocusHistory(SP<Layout::ITarget> target);
