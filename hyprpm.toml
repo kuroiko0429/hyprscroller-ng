@@ -2,7 +2,7 @@
 name = "hyprscroller-ng"
 authors = ["kuroiko0429"]
 commit_pins = [
-    ["5c9377c15f85c50648f35ca5a213754f95b93ca0", "30f1b8c12a41682d35ca77999ca068e3a7351cd2"], # v0.56.1
+    ["5c9377c15f85c50648f35ca5a213754f95b93ca0", "a58b52fc615a735fb79c89532bc473e563bb2727"], # v0.56.1
 ]
 
 [hyprscrolling]
