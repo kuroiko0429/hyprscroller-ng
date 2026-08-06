@@ -16,6 +16,10 @@
 #include <hyprland/src/layout/target/Target.hpp>
 #include <hyprland/src/helpers/MiscFunctions.hpp>
 #include <hyprland/src/macros.hpp>
+#include <hyprland/src/pointer/PointerManager.hpp>
+#include <hyprland/src/state/WorkspaceState.hpp>
+#include <hyprland/src/state/WorkspaceQuery.hpp>
+#include <hyprland/src/desktop/state/GlobalWindowController.hpp>
 
 #include <hyprutils/string/VarList.hpp>
 #include <hyprutils/string/ConstVarList.hpp>
@@ -917,7 +921,7 @@ Config::ErrorResult CScrollingLayout::layoutMsg(const std::string_view& sv) {
             auto target = COL->windowDatas.front()->target.lock();
             focusTargetUpdate(target);
             if (target && target->window())
-                g_pCompositor->warpCursorTo(target->window()->middle());
+                Pointer::mgr()->warpTo(target->window()->middle());
 
             return {};
         } else if (ARGS[1] == "-col") {
@@ -930,7 +934,7 @@ Config::ErrorResult CScrollingLayout::layoutMsg(const std::string_view& sv) {
                     auto target = m_scrollingData->columns.back()->windowDatas.back()->target.lock();
                     focusTargetUpdate(target);
                     if (target && target->window())
-                        g_pCompositor->warpCursorTo(target->window()->middle());
+                        Pointer::mgr()->warpTo(target->window()->middle());
                 }
 
                 return {};
@@ -946,7 +950,7 @@ Config::ErrorResult CScrollingLayout::layoutMsg(const std::string_view& sv) {
             auto target = COL->windowDatas.back()->target.lock();
             focusTargetUpdate(target);
             if (target && target->window())
-                g_pCompositor->warpCursorTo(target->window()->middle());
+                Pointer::mgr()->warpTo(target->window()->middle());
 
             return {};
         }
@@ -1204,7 +1208,7 @@ Config::ErrorResult CScrollingLayout::layoutMsg(const std::string_view& sv) {
                 focusTargetUpdate(PREV->target.lock());
                 auto w = PREV->target.lock() ? PREV->target.lock()->window() : nullptr;
                 if (w)
-                    g_pCompositor->warpCursorTo(w->middle());
+                    Pointer::mgr()->warpTo(w->middle());
                 break;
             }
 
@@ -1221,7 +1225,7 @@ Config::ErrorResult CScrollingLayout::layoutMsg(const std::string_view& sv) {
                 focusTargetUpdate(NEXT->target.lock());
                 auto w = NEXT->target.lock() ? NEXT->target.lock()->window() : nullptr;
                 if (w)
-                    g_pCompositor->warpCursorTo(w->middle());
+                    Pointer::mgr()->warpTo(w->middle());
                 break;
             }
 
@@ -1234,7 +1238,7 @@ Config::ErrorResult CScrollingLayout::layoutMsg(const std::string_view& sv) {
                         m_scrollingData->recalculate();
                         auto w = WDATA->target.lock() ? WDATA->target.lock()->window() : nullptr;
                         if (w)
-                            g_pCompositor->warpCursorTo(w->middle());
+                            Pointer::mgr()->warpTo(w->middle());
                         break;
                     } else
                         PREV = m_scrollingData->columns.back();
@@ -1247,7 +1251,7 @@ Config::ErrorResult CScrollingLayout::layoutMsg(const std::string_view& sv) {
                     m_scrollingData->recalculate();
                     auto w = pTargetWindowData->target.lock() ? pTargetWindowData->target.lock()->window() : nullptr;
                     if (w)
-                        g_pCompositor->warpCursorTo(w->middle());
+                        Pointer::mgr()->warpTo(w->middle());
                 }
                 break;
             }
@@ -1261,7 +1265,7 @@ Config::ErrorResult CScrollingLayout::layoutMsg(const std::string_view& sv) {
                         m_scrollingData->recalculate();
                         auto w = WDATA->target.lock() ? WDATA->target.lock()->window() : nullptr;
                         if (w)
-                            g_pCompositor->warpCursorTo(w->middle());
+                            Pointer::mgr()->warpTo(w->middle());
                         break;
                     } else
                         NEXT = m_scrollingData->columns.front();
@@ -1274,7 +1278,7 @@ Config::ErrorResult CScrollingLayout::layoutMsg(const std::string_view& sv) {
                     m_scrollingData->recalculate();
                     auto w = pTargetWindowData->target.lock() ? pTargetWindowData->target.lock()->window() : nullptr;
                     if (w)
-                        g_pCompositor->warpCursorTo(w->middle());
+                        Pointer::mgr()->warpTo(w->middle());
                 }
                 break;
             }
@@ -1514,7 +1518,7 @@ Config::ErrorResult CScrollingLayout::layoutMsg(const std::string_view& sv) {
                     m_scrollingData->recalculate();
                     Desktop::focusState()->fullWindowFocus(target->window(), Desktop::FOCUS_REASON_OTHER);
                     if (target->window())
-                        g_pCompositor->warpCursorTo(target->window()->middle());
+                        Pointer::mgr()->warpTo(target->window()->middle());
                 }
             }
 
@@ -1538,7 +1542,7 @@ Config::ErrorResult CScrollingLayout::layoutMsg(const std::string_view& sv) {
                     m_scrollingData->recalculate();
                     Desktop::focusState()->fullWindowFocus(target->window(), Desktop::FOCUS_REASON_OTHER);
                     if (target->window())
-                        g_pCompositor->warpCursorTo(target->window()->middle());
+                        Pointer::mgr()->warpTo(target->window()->middle());
                 }
             }
 
@@ -1624,7 +1628,7 @@ void CScrollingLayout::moveTargetTo(SP<Layout::ITarget> t, Math::eDirection dir,
     focusTargetUpdate(t);
     auto w = t->window();
     if (w)
-        g_pCompositor->warpCursorTo(w->middle());
+        Pointer::mgr()->warpTo(w->middle());
 }
 
 SP<SScrollingWindowData> CScrollingLayout::dataFor(SP<Layout::ITarget> t) {
@@ -1659,9 +1663,9 @@ void CScrollingLayout::moveColToWorkspace(SP<SColumnData> col, const std::string
         return;
 
     // Get or create target workspace
-    auto TARGETWS = g_pCompositor->getWorkspaceByID(WSIDNAME.id);
+    auto TARGETWS = State::CWorkspaceQuery(*State::workspaceState()).id(WSIDNAME.id).run();
     if (!TARGETWS) {
-        TARGETWS = g_pCompositor->createNewWorkspace(WSIDNAME.id, CURRENTWS->m_monitor.lock() ? CURRENTWS->m_monitor.lock()->m_id : 0, WSIDNAME.name);
+        TARGETWS = State::workspaceState()->create(WSIDNAME.id, CURRENTWS->m_monitor.lock() ? CURRENTWS->m_monitor.lock()->m_id : 0, WSIDNAME.name);
     }
 
     if (!TARGETWS || TARGETWS == CURRENTWS)
@@ -1677,7 +1681,7 @@ void CScrollingLayout::moveColToWorkspace(SP<SColumnData> col, const std::string
 
     // Move each window to the target workspace
     for (const auto& w : windowsToMove) {
-        g_pCompositor->moveWindowToWorkspaceSafe(w, TARGETWS);
+        Desktop::globalWindowController()->moveWindowToWorkspace(w, TARGETWS);
     }
 }
 
