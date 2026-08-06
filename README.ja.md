@@ -24,6 +24,21 @@
 
 ## インストール
 
+### hyprpm（推奨）
+
+```bash
+hyprpm add https://github.com/kuroiko0429/hyprscroller-ng
+hyprpm enable hyprscrolling
+```
+
+`hyprland.conf` に追加:
+
+```
+general {
+    layout = hyprscrolling
+}
+```
+
 ### ソースからビルド
 
 **必要なもの:** `hyprland`, `libdrm`, `libinput`, `libudev`, `pangocairo`, `pixman-1`, `wayland-server`, `xkbcommon`

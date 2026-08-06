@@ -24,19 +24,32 @@ Inspired by [hyprscroller](https://github.com/dawsers/hyprscroller) (MIT) — re
 
 ## Installation
 
+### hyprpm (recommended)
+
+```bash
+hyprpm add https://github.com/kuroiko0429/hyprscroller-ng
+hyprpm enable hyprscrolling
+```
+
+Then add to your `hyprland.conf`:
+
+```
+general {
+    layout = hyprscrolling
+}
+```
+
 ### Build from source
 
 **Requirements:** `hyprland`, `libdrm`, `libinput`, `libudev`, `pangocairo`, `pixman-1`, `wayland-server`, `xkbcommon`
 
 ```bash
-git clone https://github.com/kuroiko0429/hyprscrolling
-cd hyprscrolling
+git clone https://github.com/kuroiko0429/hyprscroller-ng
+cd hyprscroller-ng
 make
 ```
 
 This produces `hyprscrolling.so` in the project directory.
-
-### Load the plugin
 
 Add to your `hyprland.conf`:
 

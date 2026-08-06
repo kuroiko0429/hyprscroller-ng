@@ -1,0 +1,14 @@
+[repository]
+name = "hyprscroller-ng"
+authors = ["kuroiko0429"]
+commit_pins = [
+    ["5c9377c15f85c50648f35ca5a213754f95b93ca0", "30f1b8c12a41682d35ca77999ca068e3a7351cd2"], # v0.56.1
+]
+
+[hyprscrolling]
+description = "A scrolling (column-based) layout plugin for Hyprland"
+authors = ["kuroiko0429"]
+output = "hyprscrolling.so"
+build = [
+    "make all",
+]
