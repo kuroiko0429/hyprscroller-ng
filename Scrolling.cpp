@@ -17,8 +17,8 @@
 #include <hyprland/src/helpers/MiscFunctions.hpp>
 #include <hyprland/src/macros.hpp>
 #include <hyprland/src/pointer/PointerManager.hpp>
-#include <hyprland/src/state/WorkspaceState.hpp>
-#include <hyprland/src/state/WorkspaceQuery.hpp>
+#include <hyprland/src/state/workspace/State.hpp>
+#include <hyprland/src/state/workspace/Resolver.hpp>
 #include <hyprland/src/desktop/state/GlobalWindowController.hpp>
 
 #include <hyprutils/string/VarList.hpp>
@@ -1649,11 +1649,6 @@ void CScrollingLayout::moveColToWorkspace(SP<SColumnData> col, const std::string
     if (!col || col->windowDatas.empty())
         return;
 
-    // Resolve workspace
-    const auto WSIDNAME = getWorkspaceIDNameFromString(wsStr);
-    if (WSIDNAME.id == WORKSPACE_INVALID)
-        return;
-
     auto parent = m_parent.lock();
     if (!parent || !parent->space())
         return;
@@ -1662,10 +1657,19 @@ void CScrollingLayout::moveColToWorkspace(SP<SColumnData> col, const std::string
     if (!CURRENTWS)
         return;
 
+    const auto MONITOR = CURRENTWS->m_monitor.lock();
+    if (!MONITOR)
+        return;
+
+    // Resolve relative selectors against the column's monitor.
+    const auto WSTARGET = State::Workspace::resolver()->getWorkspaceTargetFromString(wsStr, MONITOR);
+    if (!WSTARGET.valid())
+        return;
+
     // Get or create target workspace
-    auto TARGETWS = State::CWorkspaceQuery(*State::workspaceState()).id(WSIDNAME.id).run();
+    auto TARGETWS = State::Workspace::state()->find(WSTARGET);
     if (!TARGETWS) {
-        TARGETWS = State::workspaceState()->create(WSIDNAME.id, CURRENTWS->m_monitor.lock() ? CURRENTWS->m_monitor.lock()->m_id : 0, WSIDNAME.name);
+        TARGETWS = State::Workspace::state()->create(WSTARGET, MONITOR);
     }
 
     if (!TARGETWS || TARGETWS == CURRENTWS)
@@ -1722,7 +1726,7 @@ float CScrollingLayout::autoWidthForTarget(SP<Layout::ITarget> target) {
         return defaultColumnWidth();
 
     // Check window class
-    const std::string cls = w->m_class;
+    const auto& cls = w->metadata().appID();
     auto it = m_config.autoWidthRules.find(cls);
     if (it != m_config.autoWidthRules.end())
         return it->second;
